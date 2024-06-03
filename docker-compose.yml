@@ -1,0 +1,28 @@
+services:
+  cadastrocliente.application:
+    image: ${DOCKER_REGISTRY-}cadastroclienteapplication
+    build: 
+      context: .
+      dockerfile: src/Dockerfile
+    ports:
+      - 8080:8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - sqlserver
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    hostname: 'sqlserver'
+    environment:
+      ACCEPT_EULA: 'Y'
+      SA_PASSWORD: "CadCliente@1234"
+    ports:
+      - '11433:1433'
+    expose:
+      - 1433
+    volumes:
+      - volume-banco:/var/opt/mssql
+      
+volumes:
+  volume-banco:
