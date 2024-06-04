@@ -1,3 +1,6 @@
+using CadastroCliente.Domain.Interfaces;
+using CadastroCliente.Domain.Service;
+using CadastroCliente.Infrastructure.Data.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -51,6 +54,12 @@ internal class Program
         builder.Services.AddDbContext<ApplicationDbContext>(
             options => options.UseSqlServer(connection)
         );
+
+        builder.Services.AddScoped<IClienteService, ClienteService>();
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+
+        builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         builder.Services.AddAuthorization();
         builder.Services.AddIdentityApiEndpoints<IdentityUser>()
