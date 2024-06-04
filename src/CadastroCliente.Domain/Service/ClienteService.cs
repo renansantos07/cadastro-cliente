@@ -34,6 +34,7 @@ namespace CadastroCliente.Domain.Service
                 {
                     _notifier.Handle(new Notification("Propriedade " + failure.PropertyName + " Falha na validação: " + failure.ErrorMessage));
                 }
+                return;
             }
 
             await _repository.Adicionar(cliente);
@@ -42,8 +43,8 @@ namespace CadastroCliente.Domain.Service
         public async Task<List<ClienteEntity>> ObterQuery(ClienteEntity cliente)
         {
             Expression<Func<ClienteEntity, bool>> query = x => x.NomeFantasia == cliente.NomeFantasia
-                                                    && x.RazaoSocial == cliente.RazaoSocial
-                                                    && x.Documento == cliente.Documento;
+                                                    || x.RazaoSocial == cliente.RazaoSocial
+                                                    || x.Documento == cliente.Documento;
 
             return await _repository.ObterQuery(query);
         }
@@ -53,19 +54,32 @@ namespace CadastroCliente.Domain.Service
             return await _repository.ObterTodos();
         }
 
+        public async Task Atualizar(ClienteEntity cliente)
+        {
+            ClienteValidator clienteValidator = new ClienteValidator();
+
+            ValidationResult results = clienteValidator.Validate(cliente);
+
+            if (!results.IsValid)
+            {
+                foreach (var failure in results.Errors)
+                {
+                    _notifier.Handle(new Notification("Propriedade " + failure.PropertyName + " Falha na validação: " + failure.ErrorMessage));
+                }
+                return;
+            }
+
+            await _repository.Atualizar(cliente);
+        }
+
+        public Task Remover(Guid Id)
+        {
+            return _repository.Remover(Id);
+        }
+
         public void Dispose()
         {
             _repository?.Dispose();
-        }
-
-        public Task Atualizar(ClienteEntity entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Remover(ClienteEntity entity)
-        {
-            throw new NotImplementedException();
         }
     }
 }

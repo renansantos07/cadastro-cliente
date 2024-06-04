@@ -9,6 +9,7 @@ namespace CadastroCliente.Application.Configuration
         public AutomapperConfig()
         {
             CreateMap<ClienteEntity, ClienteDTO>().ReverseMap();
+            CreateMap<ClienteEntity, ClienteQueryDTO>().ReverseMap();
         }
     }
 }

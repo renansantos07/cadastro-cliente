@@ -9,7 +9,7 @@ namespace CadastroCliente.Domain.Interfaces
         Task Adicionar(ClienteEntity cliente);
         Task<List<ClienteEntity>> ObterTodos();
         Task<List<ClienteEntity>> ObterQuery(ClienteEntity cliente);
-        Task Atualizar(ClienteEntity entity);
-        Task Remover(ClienteEntity entity);
+        Task Atualizar(ClienteEntity cliente);
+        Task Remover(Guid Id);
     }    
 }

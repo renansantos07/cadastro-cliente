@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CadastroCliente.Domain.Model.Cliente
@@ -7,6 +8,8 @@ namespace CadastroCliente.Domain.Model.Cliente
     {
         public string RazaoSocial { get; set; }
         public string NomeFantasia { get; set; }
+
+        [StringLength(14)]
         public string Documento { get; set; }
     }
 }

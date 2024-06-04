@@ -31,7 +31,50 @@ namespace CadastroCliente.Infrastructure.Data.Repository
         {
             return await _dataBaseSet.ToListAsync();
         }
+        public async Task Atualizar(T entity)
+        {
+            try
+            {
+                _dataBase.Update(entity);
+                await SaveChanges();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                foreach (var entry in ex.Entries)
+                {
+                    if (entry.Entity is T)
+                    {
+                        var proposedValues = entry.CurrentValues;
+                        var databaseValues = entry.GetDatabaseValues();
 
+                        foreach (var property in proposedValues.Properties)
+                        {
+                            var proposedValue = proposedValues[property];
+                            var databaseValue = databaseValues[property];
+
+                            // TODO: decide which value should be written to database
+                            proposedValues[property] = proposedValue;
+                        }
+
+                        // Refresh original values to bypass next concurrency check
+                        entry.OriginalValues.SetValues(databaseValues);
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(
+                            "Don't know how to handle concurrency conflicts for "
+                            + entry.Metadata.Name);
+                    }
+                }
+            }
+        }
+
+        public virtual async Task Remover(Guid Id)
+        {
+            _dataBaseSet.Remove(new T { Id = Id });
+            await SaveChanges();
+        }
+    
         public async Task<int> SaveChanges()
         {
             return await _dataBase.SaveChangesAsync();
@@ -40,16 +83,6 @@ namespace CadastroCliente.Infrastructure.Data.Repository
         public void Dispose()
         {
             _dataBase?.Dispose();
-        }
-
-        public Task Atualizar(T entity)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Remover(T entity)
-        {
-            throw new NotImplementedException();
         }
     }
 

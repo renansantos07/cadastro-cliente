@@ -43,4 +43,60 @@ public class ClienteController : MainController
 
         return CustomResponse(clienteEntity);
     }
+
+    [HttpGet("ObterTodos")]
+    [ProducesResponseType(typeof(SuccessResponseExampleDTO<List<ClienteDTO>>), 200)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
+    public async Task<ActionResult<ClienteDTO>> ObterTodos()
+    {
+        List<ClienteEntity> clienteEntities = await _clienteService.ObterTodos();
+        List<ClienteDTO> clienteDTO = _mapper.Map<List<ClienteDTO>>(clienteEntities);
+
+
+        return CustomResponse(clienteDTO);
+    }
+
+    [HttpPost("Query")]
+    [ProducesResponseType(typeof(SuccessResponseExampleDTO<List<ClienteDTO>>), 200)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
+    public async Task<ActionResult<ClienteDTO>> ObterQuery(ClienteQueryDTO cliente)
+    {
+        ClienteEntity clienteEntity = _mapper.Map<ClienteEntity>(cliente);
+
+        List<ClienteEntity> clienteEntities = await _clienteService.ObterQuery(clienteEntity);
+
+        List<ClienteDTO> clienteDTO = _mapper.Map<List<ClienteDTO>>(clienteEntities);
+
+
+        return CustomResponse(clienteDTO);
+    }
+
+    [HttpPut("AtualizarCliente")]
+    [ProducesResponseType(typeof(SuccessResponseExampleDTO<ClienteDTO>), 200)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
+    public async Task<ActionResult<ClienteDTO>> AtualizarCliente([FromQuery]Guid Id, [FromBody]ClienteDTO cliente)
+    {
+        if (!ModelState.IsValid) return CustomResponse(ModelState);
+
+        if (Guid.Empty == cliente.Id)
+        {
+            cliente.Id = Id;
+        }
+
+        ClienteEntity clienteEntity = _mapper.Map<ClienteEntity>(cliente);
+
+        await _clienteService.Atualizar(clienteEntity);
+
+        return CustomResponse(clienteEntity);
+    }
+
+    [HttpDelete("DeletarCliente")]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
+    public async Task<ActionResult<ClienteDTO>> DeletarCliente([FromQuery]Guid Id)
+    {
+
+        await _clienteService.Remover(Id);
+
+        return CustomResponse();
+    }
 }

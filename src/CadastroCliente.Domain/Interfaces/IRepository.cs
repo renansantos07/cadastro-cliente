@@ -9,7 +9,7 @@ namespace CadastroCliente.Domain.Interfaces
         Task<List<T>> ObterTodos();
         Task<List<T>> ObterQuery(Expression<Func<T, bool>> query);
         Task Atualizar(T entity);
-        Task Remover(T entity);
+        Task Remover(Guid Id);
         Task<int> SaveChanges();
 
     }
