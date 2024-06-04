@@ -1,0 +1,35 @@
+<main class="form-signin w-100 m-auto mt-5">
+    <form [formGroup]="formLogin">
+        <h1 class="h3 mb-3 fw-normal">Entrar</h1>
+
+        <div class="form-floating my-3">
+            <input type="email" class="form-control" id="email" name="email" formControlName="email" required=""
+                placeholder="name@example.com">
+            <label for="floatingInput">E-mail</label>
+        </div>
+        <div class="form-floating">
+            <input type="password" class="form-control" id="senha" name="senha" formControlName="senha" required=""
+                placeholder="Password">
+            <label for="floatingPassword">Senha</label>
+        </div>
+        <ng-container *ngIf="!isCadastro">
+            <div class="text-center my-3">
+                <button class="btn" (click)="isCadastro = !isCadastro">Criar nova conta</button>
+            </div>
+            <button class="btn btn-primary w-100 py-2" type="submit" (click)="Logar()" [ngClass]="{'disabled' : !formLogin.valid}"
+                [disabled]="!formLogin.valid">Entrar</button>
+        </ng-container>
+
+        <ng-container *ngIf="isCadastro">
+            <div class="text-center my-3">
+                <button class="btn" (click)="isCadastro = !isCadastro">Realizar Login</button>
+            </div>
+            <button class="btn btn-info w-100 py-2" type="submit" (click)="Cadastrar()" [ngClass]="{'disabled' : !formLogin.valid}"
+                [disabled]="!formLogin.valid">Cadastrar</button>
+        </ng-container>
+
+        <div class="badge text-bg-danger text-wrap my-4" [ngClass]="{'d-none' : !mensagem}">
+            {{mensagem}}
+        </div>
+    </form>
+</main>

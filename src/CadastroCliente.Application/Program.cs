@@ -13,6 +13,19 @@ internal class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(MyAllowSpecificOrigins,
+                                  policy =>
+                                  {
+                                      policy.AllowAnyOrigin()
+                                            .AllowAnyHeader()
+                                            .AllowAnyMethod();
+                                  });
+        });
+
         // Add services to the container.
 
         builder.Services.AddControllers();
@@ -80,6 +93,8 @@ internal class Program
         }
 
         app.MapSwagger().RequireAuthorization();
+
+        app.UseCors(MyAllowSpecificOrigins);
 
         app.UseAuthorization();
 
