@@ -9,6 +9,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CadastroClienteDB;User Id=sa;Password=CadCliente@1234;TrustServerCertificate=true;Encrypt=False;Integrated Security=False;
     depends_on:
       - sqlserver
   sqlserver:
