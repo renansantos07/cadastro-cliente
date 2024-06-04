@@ -3,7 +3,6 @@ using CadastroCliente.Application.DTO;
 using CadastroCliente.Domain.Interfaces;
 using CadastroCliente.Domain.Model.Cliente;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CadastroCliente.Application.Controllers;
@@ -11,7 +10,7 @@ namespace CadastroCliente.Application.Controllers;
 [ApiController]
 [Route("[controller]")]
 [Authorize]
-public class ClienteController : ControllerBase
+public class ClienteController : MainController
 {
 
 
@@ -20,7 +19,11 @@ public class ClienteController : ControllerBase
 
     private readonly IClienteService _clienteService;
 
-    public ClienteController(ILogger<ClienteController> logger, IMapper mapper, IClienteService clienteService)
+    public ClienteController(
+        INotifier notifier,
+        ILogger<ClienteController> logger,
+        IMapper mapper,
+        IClienteService clienteService) : base(notifier)
     {
         _logger = logger;
         _mapper = mapper;
@@ -28,14 +31,16 @@ public class ClienteController : ControllerBase
     }
 
     [HttpPost("CriarCliente")]
+    [ProducesResponseType(typeof(SuccessResponseExampleDTO<ClienteDTO>), 200)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
     public async Task<ActionResult<ClienteDTO>> CriarCliente(ClienteDTO cliente)
     {
-        if (!ModelState.IsValid) return BadRequest();
+        if (!ModelState.IsValid) return CustomResponse(ModelState);
 
         ClienteEntity clienteEntity = _mapper.Map<ClienteEntity>(cliente);
 
         await _clienteService.Adicionar(clienteEntity);
 
-        return Ok(clienteEntity);
+        return CustomResponse(clienteEntity);
     }
 }

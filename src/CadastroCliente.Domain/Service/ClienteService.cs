@@ -1,20 +1,41 @@
 using System.Linq.Expressions;
 using CadastroCliente.Domain.Interfaces;
 using CadastroCliente.Domain.Model.Cliente;
+using CadastroCliente.Domain.Notifications;
+using CadastroCliente.Domain.Validate;
+using FluentValidation;
+using FluentValidation.Results;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace CadastroCliente.Domain.Service
 {
     public class ClienteService : IClienteService
     {
         private readonly IRepository<ClienteEntity> _repository;
-
-        public ClienteService(IRepository<ClienteEntity> repository)
+        private readonly INotifier _notifier;
+        public ClienteService(
+            INotifier notifier,
+            IRepository<ClienteEntity> repository
+            )
         {
+            _notifier = notifier;
             _repository = repository;
         }
 
         public async Task Adicionar(ClienteEntity cliente)
         {
+            ClienteValidator clienteValidator = new ClienteValidator();
+
+            ValidationResult results = clienteValidator.Validate(cliente);
+
+            if (!results.IsValid)
+            {
+                foreach (var failure in results.Errors)
+                {
+                    _notifier.Handle(new Notification("Propriedade " + failure.PropertyName + " Falha na validação: " + failure.ErrorMessage));
+                }
+            }
+
             await _repository.Adicionar(cliente);
         }
 

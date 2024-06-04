@@ -1,4 +1,6 @@
+using CadastroCliente.Application.Extensions;
 using CadastroCliente.Domain.Interfaces;
+using CadastroCliente.Domain.Notifications;
 using CadastroCliente.Domain.Service;
 using CadastroCliente.Infrastructure.Data.Repository;
 using Microsoft.AspNetCore.Identity;
@@ -55,6 +57,7 @@ internal class Program
             options => options.UseSqlServer(connection)
         );
 
+        builder.Services.AddScoped<INotifier, Notifier>();
         builder.Services.AddScoped<IClienteService, ClienteService>();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
@@ -66,6 +69,8 @@ internal class Program
             .AddEntityFrameworkStores<ApplicationDbContext>();
 
         var app = builder.Build();
+
+        app.UseMiddleware<ExceptionMiddleware>();
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
