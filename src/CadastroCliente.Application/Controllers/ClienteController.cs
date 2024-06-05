@@ -56,6 +56,18 @@ public class ClienteController : MainController
         return CustomResponse(clienteDTO);
     }
 
+    [HttpGet("Obter")]
+    [ProducesResponseType(typeof(SuccessResponseExampleDTO<ClienteDTO>), 200)]
+    [ProducesResponseType(typeof(ErrorResponseDTO), 400)]
+    public async Task<ActionResult<ClienteDTO>> Obter([FromQuery]Guid Id)
+    {
+        ClienteEntity clienteEntities = await _clienteService.Obter(Id);
+        ClienteDTO clienteDTO = _mapper.Map<ClienteDTO>(clienteEntities);
+
+
+        return CustomResponse(clienteDTO);
+    }
+
     [HttpPost("Query")]
     [ProducesResponseType(typeof(SuccessResponseExampleDTO<List<ClienteDTO>>), 200)]
     [ProducesResponseType(typeof(ErrorResponseDTO), 400)]

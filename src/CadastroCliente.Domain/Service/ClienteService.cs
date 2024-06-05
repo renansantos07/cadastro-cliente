@@ -81,5 +81,10 @@ namespace CadastroCliente.Domain.Service
         {
             _repository?.Dispose();
         }
+
+        public async Task<ClienteEntity> Obter(Guid Id)
+        {
+            return await _repository.Obter(Id);
+        }
     }
 }

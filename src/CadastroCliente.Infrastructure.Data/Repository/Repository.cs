@@ -84,6 +84,11 @@ namespace CadastroCliente.Infrastructure.Data.Repository
         {
             _dataBase?.Dispose();
         }
+
+        public async Task<T> Obter(Guid Id)
+        {
+            return await _dataBaseSet.FirstOrDefaultAsync(x => x.Id == Id);
+        }
     }
 
 }

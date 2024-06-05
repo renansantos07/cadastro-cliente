@@ -1,0 +1,23 @@
+<p class="h1">Dados do Cliente</p>
+<div class="my-5 w-100">
+    <form class="d-flex" [formGroup]="cadastroCLiente">
+        <input class="form-control me-2" type="text" id="razaoSocial" name="razaoSocial" placeholder="Razão Social" formControlName="razaoSocial" [(ngModel)]="cliente.razaoSocial" required="">
+        <input class="form-control me-2" type="text" id="nomeFantasia" name="nomeFantasia" placeholder="Nome Fantasia" formControlName="nomeFantasia" [(ngModel)]="cliente.nomeFantasia" required="">
+        <input class="form-control me-2" type="text" id="documento" name="documento" placeholder="Documento" formControlName="documento" [(ngModel)]="cliente.documento" required="">
+        
+        <ng-container *ngIf="!atualizar">
+            <button class="btn btn-primary" type="submit" (click)="Cadastrar()" [ngClass]="{'disabled' : !cadastroCLiente.valid}"
+            [disabled]="!cadastroCLiente.valid">Salvar</button>
+        </ng-container>
+
+        <ng-container *ngIf="atualizar">
+            <button class="btn btn-primary" type="submit" (click)="Atualizar()" [ngClass]="{'disabled' : !cadastroCLiente.valid}"
+            [disabled]="!cadastroCLiente.valid">Atualizar</button>
+        </ng-container>
+
+        
+    </form>
+    <div class="badge text-bg-danger text-wrap my-4" [ngClass]="{'d-none' : !mensagem}">
+        {{mensagem}}
+    </div>
+</div>
