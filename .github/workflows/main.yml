@@ -3,19 +3,23 @@ name: Create Pull Request to Release
 on:
   pull_request:
     types:
-      - closed  # O evento ocorre quando o PR é fechado (mesmo que seja aprovado ou rejeitado)
+      - closed
     branches:
-      - develop  # Monitora a branch develop
+      - develop
 
 jobs:
   create-pr-to-release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write  # Permissão para modificar o conteúdo do repositório
+      pull-requests: write  # Permissão para criar pull requests
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up
+    - name: Set up Git
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
@@ -32,10 +36,7 @@ jobs:
         git pull origin develop
         git checkout -b $RELEASE_BRANCH
 
-        # Envia a branch para o repositório remoto
         git push origin $RELEASE_BRANCH
-
-        # Cria um PR da feature branch para a release branch
         curl -X POST \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d '{"title":"Merge feature/'$FEATURE_BRANCH' into '$RELEASE_BRANCH'","head":"feature/'$FEATURE_BRANCH'","base":"develop"}' \
