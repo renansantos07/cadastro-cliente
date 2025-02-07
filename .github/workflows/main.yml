@@ -29,7 +29,7 @@ jobs:
       run: |
         # Verifica se o PR foi mesclado com sucesso
         FEATURE_BRANCH=$(echo ${{ github.event.pull_request.head.ref }} | sed 's/feature\///')
-        RELEASE_BRANCH="release/$FEATURE_BRANCH"
+        RELEASE_BRANCH="release"
 
         # Cria a branch de release a partir da feature branch
         git checkout develop
