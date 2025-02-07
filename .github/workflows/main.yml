@@ -1,56 +1,30 @@
-name: Deploy Workflow
+name: Running
 
 on:
-  push:
-    branches:
-      - develop
-      - feature/*
-      - release/*  # Aciona também quando push na branch release
+push: # quando o push for feito para a master
+branches:
+- master
 
 jobs:
-  deploy-dev:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'  # Só faz deploy se for na branch develop
+dev:
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+steps:
+- name: Development
+run: echo 'development'
 
-      - name: Deploy to DEV environment
-        run: |
-          echo "Deploying to DEV environment..."
-          # Comandos para deploy no ambiente de DEV, como
-          # aws-cli, Docker, etc.
-          # Exemplo:
-          # aws ecs update-service --cluster dev-cluster --service dev-service --desired-count 1
+stg:
+needs: dev
+runs-on: ubuntu-latest
 
-  wait-for-qa-approval:
-    runs-on: ubuntu-latest
-    needs: deploy-dev  # Aguarda o deploy no DEV antes de começar
-    if: github.ref == 'refs/heads/develop'  # Só aguarda aprovação se for na branch develop
-    steps:
-      - name: Request QA approval before merge to release
-        uses: hmarr/auto-approve-action@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        id: approval
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+steps:
+- name: Staging
+run: echo 'staging'
 
-  deploy-hml:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release/*' && success()  # Só roda se o merge foi para a branch release
-    needs: wait-for-qa-approval  # Aguardar aprovação antes de fazer deploy
+prd:
+needs: stg
+runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Deploy to HML environment
-        run: |
-          echo "Deploying to HML environment..."
-          # Comandos para deploy no ambiente de HML, como
-          # aws-cli, Docker, etc.
-          # Exemplo:
-          # aws ecs update-service --cluster hml-cluster --service hml-service --desired-count 1
+steps:
+- name: Production
+run: echo 'production'
