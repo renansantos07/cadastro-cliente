@@ -1,56 +1,42 @@
-name: Deploy Workflow
+name: Create Pull Request to Release
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed  # O evento ocorre quando o PR é fechado (mesmo que seja aprovado ou rejeitado)
     branches:
-      - develop
-      - feature/*
-      - release/*  # Aciona também quando push na branch release
+      - develop  # Monitora a branch develop
 
 jobs:
-  deploy-dev:
+  create-pr-to-release:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/develop'  # Só faz deploy se for na branch develop
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Deploy to DEV environment
-        run: |
-          echo "Deploying to DEV environment..."
-          # Comandos para deploy no ambiente de DEV, como
-          # aws-cli, Docker, etc.
-          # Exemplo:
-          # aws ecs update-service --cluster dev-cluster --service dev-service --desired-count 1
+    - name: Set up
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
 
-  wait-for-qa-approval:
-    runs-on: ubuntu-latest
-    needs: deploy-dev  # Aguarda o deploy no DEV antes de começar
-    if: github.ref == 'refs/heads/develop'  # Só aguarda aprovação se for na branch develop
-    steps:
-      - name: Request QA approval before merge to release
-        uses: hmarr/auto-approve-action@v2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        id: approval
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create Pull Request from feature to release
+      if: github.event.pull_request.merged == true  # Verifica se o PR foi mesclado
+      run: |
+        # Verifica se o PR foi mesclado com sucesso
+        FEATURE_BRANCH=$(echo ${{ github.event.pull_request.head.ref }} | sed 's/feature\///')
+        RELEASE_BRANCH="release/$FEATURE_BRANCH"
 
-  deploy-hml:
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/release/*' && success()  # Só roda se o merge foi para a branch release
-    needs: wait-for-qa-approval  # Aguardar aprovação antes de fazer deploy
+        # Cria a branch de release a partir da feature branch
+        git checkout develop
+        git pull origin develop
+        git checkout -b $RELEASE_BRANCH
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        # Envia a branch para o repositório remoto
+        git push origin $RELEASE_BRANCH
 
-      - name: Deploy to HML environment
-        run: |
-          echo "Deploying to HML environment..."
-          # Comandos para deploy no ambiente de HML, como
-          # aws-cli, Docker, etc.
-          # Exemplo:
-          # aws ecs update-service --cluster hml-cluster --service hml-service --desired-count 1
+        # Cria um PR da feature branch para a release branch
+        curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -d '{"title":"Merge feature/'$FEATURE_BRANCH' into '$RELEASE_BRANCH'","head":"feature/'$FEATURE_BRANCH'","base":"develop"}' \
+          https://api.github.com/repos/${{ github.repository }}/pulls
