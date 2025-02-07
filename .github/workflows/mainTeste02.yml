@@ -1,0 +1,54 @@
+name: Deploy Workflow Teste 02
+
+on:
+  push:
+    branches:
+      - develop
+      - feature/*
+      - release/*
+  pull_request:
+    branches:
+      - develop
+      - release/*  # Aciona o PR para branches develop e release
+
+jobs:
+  deploy-dev:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'  # Só faz deploy se for na branch develop
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to DEV environment
+        run: |
+          echo "Deploying to DEV environment..."
+          # Comandos para deploy no ambiente de DEV
+
+  request-qa-approval:
+    runs-on: ubuntu-latest
+    needs: deploy-dev  # Aguarda o deploy no DEV antes de começar
+    if: github.event_name == 'pull_request' && github.ref == 'refs/heads/develop' # Só aguarda aprovação se for PR em develop
+    steps:
+      - name: Request QA approval before merge to release
+        uses: hmarr/auto-approve-action@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+        id: approval
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-hml:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release/*' && success()  # Só roda se o merge foi para a branch release
+    needs: request-qa-approval  # Aguardar aprovação antes de fazer deploy
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to HML environment
+        run: |
+          echo "Deploying to HML environment..."
+          # Comandos para deploy no ambiente de HML

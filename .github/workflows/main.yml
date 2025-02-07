@@ -25,17 +25,18 @@ jobs:
         git config --global user.email "actions@github.com"
 
     - name: Create Pull Request from feature to release
-      if: github.event.pull_request.merged == true
+      if: github.event.pull_request.merged == true  # Verifica se o PR foi mesclado
       run: |
+        # Verifica se o PR foi mesclado com sucesso
         FEATURE_BRANCH=$(echo ${{ github.event.pull_request.head.ref }} | sed 's/feature\///')
         RELEASE_BRANCH="release/$FEATURE_BRANCH"
 
+        # Cria a branch de release a partir da feature branch
         git checkout develop
         git pull origin develop
         git checkout -b $RELEASE_BRANCH
 
         git push origin $RELEASE_BRANCH
-
         curl -X POST \
           -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
           -d '{"title":"Merge feature/'$FEATURE_BRANCH' into '$RELEASE_BRANCH'","head":"feature/'$FEATURE_BRANCH'","base":"develop"}' \
