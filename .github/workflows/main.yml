@@ -1,30 +1,42 @@
-name: Running
+name: Create Pull Request to Release
 
 on:
-push: # quando o push for feito para a master
-branches:
-- master
+  pull_request:
+    types:
+      - closed  # O evento ocorre quando o PR é fechado (mesmo que seja aprovado ou rejeitado)
+    branches:
+      - develop  # Monitora a branch develop
 
 jobs:
-dev:
-runs-on: ubuntu-latest
+  create-pr-to-release:
+    runs-on: ubuntu-latest
 
-steps:
-- name: Development
-run: echo 'development'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-stg:
-needs: dev
-runs-on: ubuntu-latest
+    - name: Set up Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
 
-steps:
-- name: Staging
-run: echo 'staging'
+    - name: Create Pull Request from feature to release
+      if: github.event.pull_request.merged == true  # Verifica se o PR foi mesclado
+      run: |
+        # Verifica se o PR foi mesclado com sucesso
+        FEATURE_BRANCH=$(echo ${{ github.event.pull_request.head.ref }} | sed 's/feature\///')
+        RELEASE_BRANCH="release/$FEATURE_BRANCH"
 
-prd:
-needs: stg
-runs-on: ubuntu-latest
+        # Cria a branch de release a partir da feature branch
+        git checkout develop
+        git pull origin develop
+        git checkout -b $RELEASE_BRANCH
 
-steps:
-- name: Production
-run: echo 'production'
+        # Envia a branch para o repositório remoto
+        git push origin $RELEASE_BRANCH
+
+        # Cria um PR da feature branch para a release branch
+        curl -X POST \
+          -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+          -d '{"title":"Merge feature/'$FEATURE_BRANCH' into '$RELEASE_BRANCH'","head":"feature/'$FEATURE_BRANCH'","base":"develop"}' \
+          https://api.github.com/repos/${{ github.repository }}/pulls
